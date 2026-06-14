@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ALE — vertical slice</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 40rem;
+        margin: 4rem auto;
+        padding: 0 1rem;
+        line-height: 1.5;
+      }
+      form {
+        display: flex;
+        gap: 0.5rem;
+        margin: 1.5rem 0;
+      }
+      input[type='text'] {
+        flex: 1;
+        padding: 0.5rem 0.75rem;
+        font-size: 1rem;
+      }
+      button {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+      .answer {
+        background: #f4f4f5;
+        border-radius: 0.5rem;
+        padding: 1rem 1.25rem;
+        white-space: pre-wrap;
+      }
+      .meta {
+        color: #71717a;
+        font-size: 0.85rem;
+        margin-top: 1rem;
+      }
+      .badge {
+        display: inline-block;
+        background: #fde68a;
+        color: #78350f;
+        border-radius: 0.25rem;
+        padding: 0 0.4rem;
+        font-size: 0.75rem;
+      }
+      [hidden] {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>ALE — vertical slice <span class="badge">stubbed AI</span></h1>
+    <p>
+      Type a prompt. It runs through the spine entirely client-side for now: request → (stubbed) AI
+      → rendered result.
+    </p>
+
+    <form id="ask">
+      <input id="prompt" type="text" name="prompt" placeholder="Ask something…" autofocus />
+      <button type="submit">Ask</button>
+    </form>
+
+    <div id="result" hidden>
+      <div class="answer" id="answer"></div>
+      <p class="meta">
+        model: <code id="model"></code> · id: <code id="id"></code> · <span id="mode"></span> ·
+        <span id="time"></span>
+      </p>
+    </div>
+
+    <p><a href="../">← home</a></p>
+
+    <script type="module">
+      import { stubComplete } from './stub.mjs';
+
+      const form = document.getElementById('ask');
+      const promptEl = document.getElementById('prompt');
+      const result = document.getElementById('result');
+      let seq = 0;
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const r = stubComplete(promptEl.value, Date.now(), seq++);
+        // textContent (not innerHTML) — user input is never interpreted as HTML.
+        document.getElementById('answer').textContent = r.completion;
+        document.getElementById('model').textContent = r.model;
+        document.getElementById('id').textContent = r.id;
+        document.getElementById('mode').textContent = r.stubbed ? 'stubbed' : 'live';
+        document.getElementById('time').textContent = r.createdAt;
+        result.hidden = false;
+      });
+    </script>
+  </body>
+</html>

@@ -52,7 +52,16 @@ npm run dev        # run the entrypoint in watch mode (TS, no build step)
 src/
   index.ts        # trivial runnable entrypoint — replace as the product takes shape
   index.test.ts   # smoke test proving the toolchain runs
+.github/
+  workflows/ci.yml  # CI: lint + format + typecheck + test on every push/PR
 ```
+
+## CI
+
+GitHub Actions (`.github/workflows/ci.yml`) runs lint, format check, typecheck,
+and tests on every push to `main` and every pull request, on a single Node 20
+runner (no matrix yet — kept fast). Any failing check turns the run red. Run the
+same checks locally with the `npm run` scripts above before pushing.
 
 ## License
 

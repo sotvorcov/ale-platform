@@ -1,0 +1,44 @@
+name: Deploy
+
+# Deploy pipeline for the ALE platform.
+# Builds the static site (hello-world + /health) and publishes it to GitHub
+# Pages (free tier — no paid infra). Lint/typecheck/test run in ci.yml; the
+# static build is intentionally decoupled from app code so a churning app
+# never breaks the live /health URL.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Only one concurrent Pages deploy; let an in-flight deploy finish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    name: Build + deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build:site
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist-site
+      - id: deployment
+        uses: actions/deploy-pages@v4

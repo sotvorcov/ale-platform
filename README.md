@@ -53,7 +53,10 @@ src/
   index.ts        # trivial runnable entrypoint — replace as the product takes shape
   index.test.ts   # smoke test proving the toolchain runs
 .github/
-  workflows/ci.yml  # CI: lint + format + typecheck + test on every push/PR
+  workflows/ci.yml      # CI: lint + format + typecheck + test on every push/PR
+  workflows/deploy.yml  # Deploy: build static site → GitHub Pages on push to main
+scripts/
+  build-site.mjs        # Generates the static site (hello-world + /health)
 ```
 
 ## CI
@@ -62,6 +65,28 @@ GitHub Actions (`.github/workflows/ci.yml`) runs lint, format check, typecheck,
 and tests on every push to `main` and every pull request, on a single Node 20
 runner (no matrix yet — kept fast). Any failing check turns the run red. Run the
 same checks locally with the `npm run` scripts above before pushing.
+
+## Deploy
+
+`.github/workflows/deploy.yml` builds a tiny static site (`npm run build:site`)
+and publishes it to **GitHub Pages** on every push to `main`. The live URL serves
+a hello-world index and a `/health` endpoint that returns `200`.
+
+**Why GitHub Pages (for now):** it's a zero-cost free tier with no card and a
+fully reproducible, agent-driven pipeline — the right "boring and reversible"
+call for a foundation. It's static-only, so the deployed `/health` is a generated
+file decoupled from the app code (`scripts/build-site.mjs`), which means a
+churning app never breaks the live health URL.
+
+**When we outgrow it:** once the product needs server-side compute (the real
+`/health` route in the app server), swap the deploy target to a server host's
+free tier (Fly.io / Render). The app server is already written; only the deploy
+job changes. Going private-repo instead of public also costs money (GitHub Pro),
+so both are flagged as a CEO cost decision when the time comes.
+
+```bash
+npm run build:site   # build dist-site/ locally; then `python3 -m http.server` it to test
+```
 
 ## License
 
